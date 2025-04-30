@@ -31,19 +31,19 @@ void ButtonHandler::update() {
     lastButtonState = reading;
 }
 
-bool ButtonHandler::isPressed() {
+bool ButtonHandler::isPressed() const {
     return buttonState == LOW;
 }
 
-bool ButtonHandler::isLongPressed() {
+bool ButtonHandler::isLongPressed() const {
     return isPressed() && (millis() - lastPressTime) >= LONG_PRESS_TIME;
 }
 
-bool ButtonHandler::isBothPressed(const ButtonHandler& other) {
+bool ButtonHandler::isBothPressed(const ButtonHandler& other) const {
     return isPressed() && other.isPressed();
 }
 
-bool ButtonHandler::isBothLongPressed(const ButtonHandler& other) {
+bool ButtonHandler::isBothLongPressed(const ButtonHandler& other) const {
     return isBothPressed(other) && 
            (millis() - lastPressTime) >= BOTH_BUTTONS_TIME && 
            (millis() - other.lastPressTime) >= BOTH_BUTTONS_TIME;

@@ -117,6 +117,10 @@ void DeskController::handleMovement() {
         case DeskState::PRESET_MODE:
             motor.stop();
             break;
+            
+        case DeskState::PRESET_EDIT_MODE:
+            motor.stop();
+            break;
     }
 }
 

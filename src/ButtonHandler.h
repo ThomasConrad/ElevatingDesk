@@ -7,10 +7,10 @@ class ButtonHandler {
 public:
     ButtonHandler(uint8_t pin);
     void init();
-    bool isPressed();
-    bool isLongPressed();
-    bool isBothPressed(const ButtonHandler& other);
-    bool isBothLongPressed(const ButtonHandler& other);
+    bool isPressed() const;
+    bool isLongPressed() const;
+    bool isBothPressed(const ButtonHandler& other) const;
+    bool isBothLongPressed(const ButtonHandler& other) const;
     void update();
 
 private:

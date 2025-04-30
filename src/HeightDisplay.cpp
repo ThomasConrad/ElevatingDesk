@@ -24,7 +24,7 @@ void HeightDisplay::showHeight(float heightMM) {
     clearDisplay();
     
     char buffer[MAX_MESSAGE_LENGTH];
-    snprintf(buffer, MAX_MESSAGE_LENGTH, "%.1f mm", heightMM);
+    snprintf(buffer, MAX_MESSAGE_LENGTH, "%.1f mm", (double)heightMM);
     
     display.setCursor(0, 0);
     display.print(buffer);

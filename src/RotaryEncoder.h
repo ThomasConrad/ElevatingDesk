@@ -19,7 +19,7 @@ private:
     long position;
     
     // Constants for height calculation
-    static const float MM_PER_REVOLUTION = 3.0f;  // 3mm per revolution
+    static constexpr float MM_PER_REVOLUTION = 3.0f;  // 3mm per revolution
     static const int STEPS_PER_REVOLUTION = 10;   // 10 steps per revolution
     static const float MM_PER_STEP;               // Calculated in cpp file
 };

@@ -20,19 +20,15 @@ void MotorControl::init() {
 }
 
 void MotorControl::forward(uint8_t speed) {
-    if (speed >= MIN_SPEED) {
-        targetSpeed = constrain(speed, MIN_SPEED, MAX_SPEED);
-        isMovingForward = true;
-        isMovingBackward = false;
-    }
+    targetSpeed = speed;
+    isMovingForward = true;
+    isMovingBackward = false;
 }
 
 void MotorControl::backward(uint8_t speed) {
-    if (speed >= MIN_SPEED) {
-        targetSpeed = constrain(speed, MIN_SPEED, MAX_SPEED);
-        isMovingForward = false;
-        isMovingBackward = true;
-    }
+    targetSpeed = speed;
+    isMovingForward = false;
+    isMovingBackward = true;
 }
 
 void MotorControl::stop() {
@@ -45,7 +41,7 @@ void MotorControl::stop() {
 }
 
 void MotorControl::setSpeed(uint8_t speed) {
-    targetSpeed = constrain(speed, MIN_SPEED, MAX_SPEED);
+    targetSpeed = speed;
 }
 
 uint8_t MotorControl::getSpeed() const {

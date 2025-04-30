@@ -16,7 +16,7 @@ A sophisticated Arduino-based controller for an electric standing desk, featurin
 
 ## Hardware Requirements
 
-- Arduino Mega 2560
+- Arduino Nano
 - Two DC motors with encoders
 - Two motor drivers (e.g., L298N)
 - Two push buttons
@@ -33,10 +33,10 @@ A sophisticated Arduino-based controller for an electric standing desk, featurin
 - Motor 2 Direction: Pin 5
 
 ### Encoders
-- Encoder 1 A: Pin 18
-- Encoder 1 B: Pin 19
-- Encoder 2 A: Pin 20
-- Encoder 2 B: Pin 21
+- Encoder 1 A: Pin A0 (14)
+- Encoder 1 B: Pin A1 (15)
+- Encoder 2 A: Pin A2 (16)
+- Encoder 2 B: Pin A3 (17)
 
 ### Buttons
 - Up Button: Pin 6
@@ -103,7 +103,7 @@ A sophisticated Arduino-based controller for an electric standing desk, featurin
 ## Installation
 
 1. Connect all hardware components according to pin configuration
-2. Upload the sketch to Arduino Mega
+2. Upload the sketch to Arduino Nano
 3. Calibrate the height sensors if needed
 4. Set your preferred preset heights
 
