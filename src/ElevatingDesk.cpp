@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include "DeskController.h"
 #include "ButtonHandler.h"
 #include "EndStop.h"
