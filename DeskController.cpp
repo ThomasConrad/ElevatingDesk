@@ -58,15 +58,21 @@ void DeskController::handleButtons() {
         if (upButton.isBothLongPressed(downButton)) {
             saveCurrentPreset();
             state.setState(DeskState::IDLE);
-            display.showMessage("Preset " + String(state.getCurrentPreset() + 1) + " Saved");
-        } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed(downButton)) {
+            char message[20];
+            snprintf(message, sizeof(message), "Preset %d Saved", state.getCurrentPreset() + 1);
+            display.showMessage(message);
+        } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
             moveToPreset(state.getCurrentPreset());
         } else if (upButton.isPressed() && !downButton.isPressed()) {
             state.cyclePreset(true);
-            display.showMessage("Preset " + String(state.getCurrentPreset() + 1));
+            char message[20];
+            snprintf(message, sizeof(message), "Preset %d", state.getCurrentPreset() + 1);
+            display.showMessage(message);
         } else if (downButton.isPressed() && !upButton.isPressed()) {
             state.cyclePreset(false);
-            display.showMessage("Preset " + String(state.getCurrentPreset() + 1));
+            char message[20];
+            snprintf(message, sizeof(message), "Preset %d", state.getCurrentPreset() + 1);
+            display.showMessage(message);
         } else if (!upButton.isPressed() && !downButton.isPressed()) {
             // Exit preset mode without saving if no buttons are pressed for 5 seconds
             static unsigned long lastButtonPress = 0;
@@ -133,7 +139,9 @@ void DeskController::handlePresetMode() {
         // Check if we should save the current preset
         if (upButton.isBothLongPressed(downButton)) {
             saveCurrentPreset();
-            display.showMessage("Preset " + String(state.getCurrentPreset() + 1) + " Saved");
+            char message[20];
+            snprintf(message, sizeof(message), "Preset %d Saved", state.getCurrentPreset() + 1);
+            display.showMessage(message);
         }
     }
 }
@@ -160,7 +168,9 @@ void DeskController::saveCurrentPreset() {
 void DeskController::updateDisplay() {
     if (state.isCalibrated()) {
         if (state.getState() == DeskState::PRESET_MODE) {
-            display.showMessage("Preset " + String(state.getCurrentPreset() + 1));
+            char message[20];
+            snprintf(message, sizeof(message), "Preset %d", state.getCurrentPreset() + 1);
+            display.showMessage(message);
         } else {
             display.showHeight(state.getCurrentHeight());
         }

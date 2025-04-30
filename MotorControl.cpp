@@ -1,6 +1,6 @@
 #include "MotorControl.h"
 
-MotorControl::MotorControl(int forwardPin, int backwardPin) 
+MotorControl::MotorControl(uint8_t forwardPin, uint8_t backwardPin) 
     : forwardPin(forwardPin)
     , backwardPin(backwardPin)
     , currentSpeed(0)
@@ -19,16 +19,16 @@ void MotorControl::init() {
     stop();
 }
 
-void MotorControl::forward(int speed) {
-    if (speed >= 0) {
+void MotorControl::forward(uint8_t speed) {
+    if (speed >= MIN_SPEED) {
         targetSpeed = constrain(speed, MIN_SPEED, MAX_SPEED);
         isMovingForward = true;
         isMovingBackward = false;
     }
 }
 
-void MotorControl::backward(int speed) {
-    if (speed >= 0) {
+void MotorControl::backward(uint8_t speed) {
+    if (speed >= MIN_SPEED) {
         targetSpeed = constrain(speed, MIN_SPEED, MAX_SPEED);
         isMovingForward = false;
         isMovingBackward = true;
@@ -44,11 +44,11 @@ void MotorControl::stop() {
     analogWrite(backwardPin, 0);
 }
 
-void MotorControl::setSpeed(int speed) {
+void MotorControl::setSpeed(uint8_t speed) {
     targetSpeed = constrain(speed, MIN_SPEED, MAX_SPEED);
 }
 
-int MotorControl::getSpeed() const {
+uint8_t MotorControl::getSpeed() const {
     return currentSpeed;
 }
 

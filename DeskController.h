@@ -38,9 +38,11 @@ private:
     MotorControl& motor;
     HeightDisplay& display;
     DeskState state;
+    unsigned long lastButtonPress;
     
-    static const int MOTOR_SPEED = 200;  // ~78% of max speed
-    static const int PRESET_MOVE_SPEED = 150;  // Slower speed for preset moves
+    static const uint8_t MOTOR_SPEED = 200;  // ~78% of max speed
+    static const uint8_t PRESET_MOVE_SPEED = 150;  // Slower speed for preset moves
+    static const unsigned long PRESET_TIMEOUT = 5000;  // 5 seconds timeout for preset mode
 };
 
 #endif // DESKCONTROLLER_H

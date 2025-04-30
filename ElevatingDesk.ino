@@ -5,14 +5,19 @@
 #include "MotorControl.h"
 #include "HeightDisplay.h"
 
-// Pin definitions
-const int UP_BUTTON_PIN = 2;
-const int DOWN_BUTTON_PIN = 3;
-const int ENDSTOP_PIN = 4;
-const int ENCODER_PIN_A = 5;
-const int ENCODER_PIN_B = 6;
-const int MOTOR_FORWARD_PIN = 9;
-const int MOTOR_BACKWARD_PIN = 10;
+// Pin definitions for Arduino Nano
+const int UP_BUTTON_PIN = 2;    // D2 - Interrupt capable pin for button
+const int DOWN_BUTTON_PIN = 3;  // D3 - Interrupt capable pin for button
+const int ENDSTOP_PIN = 4;      // D4 - End stop switch
+const int ENCODER_PIN_A = 5;    // D5 - Encoder A
+const int ENCODER_PIN_B = 6;    // D6 - Encoder B
+const int MOTOR_FORWARD_PIN = 9;  // D9 - PWM capable pin
+const int MOTOR_BACKWARD_PIN = 10; // D10 - PWM capable pin
+
+// Note: Arduino Nano has limited memory (2KB SRAM, 32KB Flash)
+// - Using PROGMEM for static strings
+// - Optimizing buffer sizes
+// - Using uint8_t instead of int where possible
 
 // Create component instances
 ButtonHandler upButton(UP_BUTTON_PIN);

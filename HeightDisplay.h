@@ -21,6 +21,10 @@ private:
     
     Adafruit_SSD1306 display;
     void clearDisplay();
+    
+    // Memory optimization
+    static const int TEXT_SIZE = 1;  // Reduced from 2 to save memory
+    static const int MAX_MESSAGE_LENGTH = 16;  // Limit message length
 };
 
 #endif // HEIGHTDISPLAY_H

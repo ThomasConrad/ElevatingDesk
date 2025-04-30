@@ -15,7 +15,7 @@ void HeightDisplay::init() {
     }
     
     display.clearDisplay();
-    display.setTextSize(2);
+    display.setTextSize(TEXT_SIZE);
     display.setTextColor(SSD1306_WHITE);
     display.display();
 }
@@ -23,24 +23,28 @@ void HeightDisplay::init() {
 void HeightDisplay::showHeight(float heightMM) {
     clearDisplay();
     
-    display.setCursor(0, 0);
-    display.print(heightMM, 1);
-    display.println(" mm");
+    char buffer[MAX_MESSAGE_LENGTH];
+    snprintf(buffer, MAX_MESSAGE_LENGTH, "%.1f mm", heightMM);
     
+    display.setCursor(0, 0);
+    display.print(buffer);
     display.display();
 }
 
 void HeightDisplay::showMessage(const char* message) {
     clearDisplay();
     
-    display.setCursor(0, 0);
-    display.println(message);
+    char buffer[MAX_MESSAGE_LENGTH];
+    strncpy(buffer, message, MAX_MESSAGE_LENGTH - 1);
+    buffer[MAX_MESSAGE_LENGTH - 1] = '\0';
     
+    display.setCursor(0, 0);
+    display.print(buffer);
     display.display();
 }
 
 void HeightDisplay::clearDisplay() {
     display.clearDisplay();
-    display.setTextSize(2);
+    display.setTextSize(TEXT_SIZE);
     display.setTextColor(SSD1306_WHITE);
 }
