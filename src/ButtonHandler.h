@@ -5,24 +5,25 @@
 
 class ButtonHandler {
 public:
-    ButtonHandler(uint8_t pin);
-    void init();
-    bool isPressed() const;
-    bool isLongPressed() const;
-    bool isBothPressed(const ButtonHandler& other) const;
-    bool isBothLongPressed(const ButtonHandler& other) const;
-    void update();
+  ButtonHandler(uint8_t pin);
+  void init();
+  bool isPressed() const;
+  bool isLongPressed() const;
+  bool isBothPressed(const ButtonHandler &other) const;
+  bool isBothLongPressed(const ButtonHandler &other) const;
+  void update();
 
 private:
-    uint8_t pin;
-    bool lastButtonState;
-    bool buttonState;
-    unsigned long lastDebounceTime;
-    unsigned long lastPressTime;
-    
-    static const unsigned long DEBOUNCE_DELAY = 50;    // milliseconds
-    static const unsigned long LONG_PRESS_TIME = 1000; // milliseconds
-    static const unsigned long BOTH_BUTTONS_TIME = 2000; // milliseconds for both buttons
+  uint8_t pin;
+  bool lastButtonState;
+  bool buttonState;
+  unsigned long lastDebounceTime;
+  unsigned long lastPressTime;
+
+  static const unsigned long DEBOUNCE_DELAY = 50;    // milliseconds
+  static const unsigned long LONG_PRESS_TIME = 1000; // milliseconds
+  static const unsigned long BOTH_BUTTONS_TIME =
+      2000; // milliseconds for both buttons
 };
 
 #endif // BUTTONHANDLER_H

@@ -5,12 +5,12 @@
 
 class EndStop {
 public:
-    EndStop(uint8_t pin);
-    void init();
-    bool isTriggered() const;
-    
+  EndStop(uint8_t pin);
+  void init();
+  bool isTriggered() const;
+
 private:
-    uint8_t pin;
+  uint8_t pin;
 };
 
 #endif // ENDSTOP_H
