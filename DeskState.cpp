@@ -3,7 +3,8 @@
 DeskState::DeskState() 
     : currentState(IDLE)
     , currentHeight(0.0f)
-    , calibrationStatus(false) {
+    , calibrationStatus(false)
+    , currentPreset(0) {
     for (uint8_t i = 0; i < MAX_PRESETS; i++) {
         presets[i] = 0.0f;
     }
@@ -53,14 +54,36 @@ float DeskState::getPreset(uint8_t index) const {
     return 0.0f;
 }
 
+uint8_t DeskState::getCurrentPreset() const {
+    return currentPreset;
+}
+
+void DeskState::setCurrentPreset(uint8_t index) {
+    if (index < MAX_PRESETS) {
+        currentPreset = index;
+        saveToEEPROM();
+    }
+}
+
+void DeskState::cyclePreset(bool forward) {
+    if (forward) {
+        currentPreset = (currentPreset + 1) % MAX_PRESETS;
+    } else {
+        currentPreset = (currentPreset == 0) ? MAX_PRESETS - 1 : currentPreset - 1;
+    }
+    saveToEEPROM();
+}
+
 void DeskState::saveToEEPROM() {
     EEPROM.put(CALIBRATION_FLAG_ADDRESS, calibrationStatus);
     EEPROM.put(HEIGHT_ADDRESS, currentHeight);
     EEPROM.put(PRESETS_ADDRESS, presets);
+    EEPROM.put(CURRENT_PRESET_ADDRESS, currentPreset);
 }
 
 void DeskState::loadFromEEPROM() {
     EEPROM.get(CALIBRATION_FLAG_ADDRESS, calibrationStatus);
     EEPROM.get(HEIGHT_ADDRESS, currentHeight);
     EEPROM.get(PRESETS_ADDRESS, presets);
+    EEPROM.get(CURRENT_PRESET_ADDRESS, currentPreset);
 }

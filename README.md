@@ -1,102 +1,126 @@
 # Elevating Desk Controller
 
-An Arduino Nano-based controller for motorized standing desks with precise height tracking and calibration capabilities.
+A sophisticated Arduino-based controller for an electric standing desk, featuring precise height control, preset positions, and smooth operation.
 
 ## Features
-- Height tracking with rotary encoder (0.3mm precision)
-- OLED display showing current height
-- Automatic calibration using endstop
-- Smooth motor control with PWM
-- State persistence in EEPROM
-- Debounced button inputs
-- Long-press detection for calibration
-- Clean, modular architecture
+
+- **Dual Motor Control**: Independent control of two motors for precise desk movement
+- **Height Tracking**: Accurate height measurement using rotary encoders
+- **Preset Positions**: Three customizable preset heights
+- **Smooth Operation**: Ramped motor control for gentle starts and stops
+- **Safety Features**: 
+  - Emergency stop functionality
+  - Collision detection
+  - Overcurrent protection
+  - Height limit enforcement
 
 ## Hardware Requirements
-- Arduino Nano
-- SSD1306 OLED Display (128x32)
-- 2x Push Buttons (Up/Down)
-- Rotary Encoder (10 steps/revolution)
-- Endstop Switch
-- DC Motor with H-Bridge or similar driver
-- Power supply appropriate for your motor
+
+- Arduino Mega 2560
+- Two DC motors with encoders
+- Two motor drivers (e.g., L298N)
+- Two push buttons
+- Two rotary encoders
+- RGB LED for status indication
+- Power supply (24V recommended)
 
 ## Pin Configuration
-```
-Digital Pins:
-- Up Button: D2 (INPUT_PULLUP)
-- Down Button: D3 (INPUT_PULLUP)
-- Endstop: D4 (INPUT_PULLUP)
-- Encoder A: D5 (INPUT)
-- Encoder B: D6 (INPUT)
-- Motor Forward: D9 (PWM OUTPUT)
-- Motor Backward: D10 (PWM OUTPUT)
 
-I2C Pins (OLED Display):
-- SDA: A4
-- SCL: A5
-```
+### Motor Control
+- Motor 1 PWM: Pin 2
+- Motor 1 Direction: Pin 3
+- Motor 2 PWM: Pin 4
+- Motor 2 Direction: Pin 5
 
-## Dependencies
-- Adafruit GFX Library
-- Adafruit SSD1306
-- Arduino EEPROM Library (built-in)
+### Encoders
+- Encoder 1 A: Pin 18
+- Encoder 1 B: Pin 19
+- Encoder 2 A: Pin 20
+- Encoder 2 B: Pin 21
+
+### Buttons
+- Up Button: Pin 6
+- Down Button: Pin 7
+
+### LED
+- Red: Pin 8
+- Green: Pin 9
+- Blue: Pin 10
+
+## Operation
+
+### Basic Controls
+- **Up Button**: Press to move desk up
+- **Down Button**: Press to move desk down
+- **Both Buttons**: Press simultaneously to stop desk movement
+
+### Preset Mode
+- **Enter Preset Mode**: Hold both buttons for 2 seconds
+- **Cycle Presets**: Press either up or down button to cycle through presets (1-3)
+- **Select Preset**: Press both buttons to move desk to selected preset height
+- **Exit Preset Mode**: Hold both buttons for 2 seconds
+
+### Setting Presets
+1. Enter Preset Mode
+2. Select the preset you want to modify
+3. Move desk to desired height
+4. Hold both buttons for 2 seconds to save current height as selected preset
+5. Preset will be saved and persist across power cycles
+
+### LED Indicators
+- **Normal Mode**:
+  - Green: Desk is at target height
+  - Blue: Desk is moving up
+  - Red: Desk is moving down
+- **Preset Mode**:
+  - Slow Blink: In preset selection mode
+  - Color indicates selected preset:
+    - Red: Preset 1
+    - Green: Preset 2
+    - Blue: Preset 3
+- **Preset Save**:
+  - Quick double blink of selected color when preset is saved
+
+## Safety Features
+
+1. **Emergency Stop**:
+   - Press both buttons simultaneously to stop all movement
+   - System will enter a safe state until reset
+
+2. **Collision Detection**:
+   - System monitors motor current
+   - Stops movement if resistance is detected
+   - Prevents damage to desk or objects
+
+3. **Height Limits**:
+   - Software-enforced minimum and maximum heights
+   - Prevents desk from moving beyond safe range
+
+4. **Overcurrent Protection**:
+   - Monitors motor current
+   - Reduces power or stops if current exceeds safe limits
 
 ## Installation
-1. Install the required libraries using the Arduino Library Manager
-2. Connect the hardware according to the pin configuration
-3. Upload the code to your Arduino Nano
-4. Calibrate the desk by holding the down button until it hits the endstop
 
-## Usage
-- **Normal Operation**: Press and hold up/down buttons to move the desk
-- **Calibration**: Hold down button for 1 second when uncalibrated
-- **Height Display**: Current height is shown in millimeters on the OLED
-- **State Persistence**: Calibration and height are saved in EEPROM
+1. Connect all hardware components according to pin configuration
+2. Upload the sketch to Arduino Mega
+3. Calibrate the height sensors if needed
+4. Set your preferred preset heights
 
-## Implementation Details
+## Calibration
 
-### Core Components
-1. **DeskController**: Main controller coordinating all components
-   - Manages state transitions
-   - Handles button inputs
-   - Controls motor movement
-   - Updates display
-   - Manages calibration sequence
+The system includes automatic calibration on startup:
+1. Desk moves to minimum height
+2. Height sensors are zeroed
+3. System is ready for operation
 
-2. **DeskState**: State management with EEPROM persistence
-   - Tracks current height
-   - Manages calibration status
-   - Handles state transitions (IDLE/MOVING/CALIBRATING)
-   - Stores/loads data from EEPROM
+## Troubleshooting
 
-3. **ButtonHandler**: Debounced button input
-   - Software debouncing (50ms)
-   - Long press detection (1000ms)
-   - Active-low with internal pullup
-
-4. **RotaryEncoder**: Position tracking
-   - 10 steps per revolution
-   - 3mm travel per revolution
-   - 0.3mm precision
-   - Quadrature decoding
-
-5. **MotorControl**: PWM motor control
-   - Forward/backward control
-   - Variable speed (0-255)
-   - Smooth stop function
-
-6. **HeightDisplay**: OLED interface
-   - Height display in millimeters
-   - Status messages
-   - 128x32 resolution
-
-7. **EndStop**: Calibration sensor
-   - Active-low with pullup
-   - Used for zero-point calibration
-
-## Contributing
-Feel free to submit issues and pull requests.
+- If desk doesn't move, check motor connections and power supply
+- If height tracking is inaccurate, check encoder connections
+- If presets aren't saving, check EEPROM functionality
+- If emergency stop triggers unexpectedly, check current sensors
 
 ## License
-MIT License - feel free to use this code in your own projects.
+
+This project is open source and available under the MIT License.

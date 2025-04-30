@@ -38,3 +38,13 @@ bool ButtonHandler::isPressed() {
 bool ButtonHandler::isLongPressed() {
     return isPressed() && (millis() - lastPressTime) >= LONG_PRESS_TIME;
 }
+
+bool ButtonHandler::isBothPressed(const ButtonHandler& other) {
+    return isPressed() && other.isPressed();
+}
+
+bool ButtonHandler::isBothLongPressed(const ButtonHandler& other) {
+    return isBothPressed(other) && 
+           (millis() - lastPressTime) >= BOTH_BUTTONS_TIME && 
+           (millis() - other.lastPressTime) >= BOTH_BUTTONS_TIME;
+}

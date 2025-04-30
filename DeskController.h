@@ -26,7 +26,10 @@ private:
     void handleButtons();
     void handleMovement();
     void handleCalibration();
+    void handlePresetMode();
     void updateDisplay();
+    void moveToPreset(uint8_t presetIndex);
+    void saveCurrentPreset();
     
     ButtonHandler& upButton;
     ButtonHandler& downButton;
@@ -37,6 +40,7 @@ private:
     DeskState state;
     
     static const int MOTOR_SPEED = 200;  // ~78% of max speed
+    static const int PRESET_MOVE_SPEED = 150;  // Slower speed for preset moves
 };
 
 #endif // DESKCONTROLLER_H
