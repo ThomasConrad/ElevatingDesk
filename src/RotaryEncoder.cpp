@@ -1,10 +1,8 @@
 #include "RotaryEncoder.h"
 
-const float RotaryEncoder::MM_PER_STEP =
-    MM_PER_REVOLUTION / STEPS_PER_REVOLUTION;
+const float RotaryEncoder::MM_PER_STEP = MM_PER_REVOLUTION / STEPS_PER_REVOLUTION;
 
-RotaryEncoder::RotaryEncoder(uint8_t pinA, uint8_t pinB)
-    : pinA(pinA), pinB(pinB), lastStateA(0), position(0) {}
+RotaryEncoder::RotaryEncoder(uint8_t pinA, uint8_t pinB) : pinA(pinA), pinB(pinB), lastStateA(0), position(0) {}
 
 void RotaryEncoder::init() {
   pinMode(pinA, INPUT);
@@ -28,8 +26,14 @@ void RotaryEncoder::update() {
   lastStateA = stateA;
 }
 
-long RotaryEncoder::getPosition() const { return position; }
+long RotaryEncoder::getPosition() const {
+  return position;
+}
 
-void RotaryEncoder::setPosition(long newPosition) { position = newPosition; }
+void RotaryEncoder::setPosition(long newPosition) {
+  position = newPosition;
+}
 
-float RotaryEncoder::getHeightMM() const { return position * MM_PER_STEP; }
+float RotaryEncoder::getHeightMM() const {
+  return position * MM_PER_STEP;
+}

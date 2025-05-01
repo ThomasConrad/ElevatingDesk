@@ -4,8 +4,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-HeightDisplay::HeightDisplay()
-    : display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET) {}
+HeightDisplay::HeightDisplay() : display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET) {}
 
 void HeightDisplay::init() {
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -30,7 +29,7 @@ void HeightDisplay::showHeight(float heightMM) {
   display.display();
 }
 
-void HeightDisplay::showMessage(const char *message) {
+void HeightDisplay::showMessage(const char* message) {
   clearDisplay();
 
   char buffer[MAX_MESSAGE_LENGTH];

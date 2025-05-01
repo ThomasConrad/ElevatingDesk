@@ -1,9 +1,8 @@
 #include "MotorControl.h"
 
 MotorControl::MotorControl(uint8_t forwardPin, uint8_t backwardPin)
-    : forwardPin(forwardPin), backwardPin(backwardPin), currentSpeed(0),
-      targetSpeed(0), lastRampTime(0), isMovingForward(false),
-      isMovingBackward(false) {}
+    : forwardPin(forwardPin), backwardPin(backwardPin), currentSpeed(0), targetSpeed(0), lastRampTime(0),
+      isMovingForward(false), isMovingBackward(false) {}
 
 void MotorControl::init() {
   // Set up the motor control pins as outputs
@@ -35,9 +34,13 @@ void MotorControl::stop() {
   analogWrite(backwardPin, 0);
 }
 
-void MotorControl::setSpeed(uint8_t speed) { targetSpeed = speed; }
+void MotorControl::setSpeed(uint8_t speed) {
+  targetSpeed = speed;
+}
 
-uint8_t MotorControl::getSpeed() const { return currentSpeed; }
+uint8_t MotorControl::getSpeed() const {
+  return currentSpeed;
+}
 
 void MotorControl::update() {
   unsigned long currentTime = millis();

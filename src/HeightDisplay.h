@@ -11,7 +11,7 @@ public:
   HeightDisplay();
   void init();
   void showHeight(float heightMM);
-  void showMessage(const char *message);
+  void showMessage(const char* message);
 
 private:
   static const int SCREEN_WIDTH = 128;

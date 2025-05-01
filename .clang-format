@@ -1,0 +1,13 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 2
+TabWidth: 2
+BreakBeforeBraces: Attach
+Standard: Latest
+ColumnLimit: 120
+PointerAlignment: Left
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: false
+InsertBraces: true
+RequiresClausePosition: OwnLine

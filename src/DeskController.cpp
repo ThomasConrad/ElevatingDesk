@@ -1,11 +1,9 @@
 #include "DeskController.h"
 
-DeskController::DeskController(ButtonHandler &upButton,
-                               ButtonHandler &downButton, EndStop &endStop,
-                               RotaryEncoder &encoder, MotorControl &motor,
-                               HeightDisplay &display)
-    : upButton(upButton), downButton(downButton), endStop(endStop),
-      encoder(encoder), motor(motor), display(display), state() {}
+DeskController::DeskController(ButtonHandler& upButton, ButtonHandler& downButton, EndStop& endStop,
+                               RotaryEncoder& encoder, MotorControl& motor, HeightDisplay& display)
+    : upButton(upButton), downButton(downButton), endStop(endStop), encoder(encoder), motor(motor), display(display),
+      state() {}
 
 void DeskController::init() {
   state.init();
@@ -26,6 +24,7 @@ void DeskController::update() {
   handleButtons();
   handleMovement();
   handleCalibration();
+  handleHeightCalibration();
   handlePresetMode();
   updateDisplay();
 }
@@ -40,6 +39,9 @@ void DeskController::handleButtons() {
       } else {
         state.setState(DeskState::MOVING_DOWN);
       }
+    } else if (upButton.isBothVeryLongPressed(downButton)) {
+      state.setState(DeskState::CALIBRATING_HEIGHT);
+      display.showMessage("Height Calibration");
     } else if (upButton.isBothLongPressed(downButton)) {
       state.setState(DeskState::PRESET_MODE);
       display.showMessage("Preset Mode");
@@ -49,23 +51,19 @@ void DeskController::handleButtons() {
       saveCurrentPreset();
       state.setState(DeskState::IDLE);
       char message[20];
-      snprintf(message, sizeof(message), "Preset %d Saved",
-               state.getCurrentPreset() + 1);
+      snprintf(message, sizeof(message), "Preset %d Saved", state.getCurrentPreset() + 1);
       display.showMessage(message);
-    } else if (upButton.isBothPressed(downButton) &&
-               !upButton.isLongPressed()) {
+    } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
       moveToPreset(state.getCurrentPreset());
     } else if (upButton.isPressed() && !downButton.isPressed()) {
       state.cyclePreset(true);
       char message[20];
-      snprintf(message, sizeof(message), "Preset %d",
-               state.getCurrentPreset() + 1);
+      snprintf(message, sizeof(message), "Preset %d", state.getCurrentPreset() + 1);
       display.showMessage(message);
     } else if (downButton.isPressed() && !upButton.isPressed()) {
       state.cyclePreset(false);
       char message[20];
-      snprintf(message, sizeof(message), "Preset %d",
-               state.getCurrentPreset() + 1);
+      snprintf(message, sizeof(message), "Preset %d", state.getCurrentPreset() + 1);
       display.showMessage(message);
     } else if (!upButton.isPressed() && !downButton.isPressed()) {
       // Exit preset mode without saving if no buttons are pressed for 5 seconds
@@ -108,6 +106,11 @@ void DeskController::handleMovement() {
     // Handled in handleCalibration()
     break;
 
+  case DeskState::CALIBRATING_HEIGHT:
+    // Handled in handleHeightCalibration()
+    motor.stop();
+    break;
+
   case DeskState::PRESET_MODE:
     motor.stop();
     break;
@@ -138,8 +141,7 @@ void DeskController::handlePresetMode() {
     if (upButton.isBothLongPressed(downButton)) {
       saveCurrentPreset();
       char message[20];
-      snprintf(message, sizeof(message), "Preset %d Saved",
-               state.getCurrentPreset() + 1);
+      snprintf(message, sizeof(message), "Preset %d Saved", state.getCurrentPreset() + 1);
       display.showMessage(message);
     }
   }
@@ -168,11 +170,57 @@ void DeskController::updateDisplay() {
   if (state.isCalibrated()) {
     if (state.getState() == DeskState::PRESET_MODE) {
       char message[20];
-      snprintf(message, sizeof(message), "Preset %d",
-               state.getCurrentPreset() + 1);
+      snprintf(message, sizeof(message), "Preset %d", state.getCurrentPreset() + 1);
       display.showMessage(message);
     } else {
       display.showHeight(state.getCurrentHeight());
+    }
+  }
+}
+
+void DeskController::handleHeightCalibration() {
+  if (state.getState() == DeskState::CALIBRATING_HEIGHT) {
+    // Show current height and instructions
+    static bool showingMessage = true;
+    static unsigned long lastMessageTime = 0;
+
+    // Toggle between showing the message and the current height
+    if (millis() - lastMessageTime > 2000) { // Switch display every 2 seconds
+      lastMessageTime = millis();
+      if (showingMessage) {
+        char message[20];
+        snprintf(message, sizeof(message), "Height: %.1f mm", (double)state.getCurrentHeight());
+        display.showMessage(message);
+      } else {
+        display.showMessage("Up/Down to adjust");
+      }
+      showingMessage = !showingMessage;
+    }
+
+    // Handle button presses for adjustment
+    if (upButton.isPressed() && !downButton.isPressed()) {
+      // Increase height offset by 0.5 mm
+      state.adjustHeightOffset(0.5);
+      char message[20];
+      snprintf(message, sizeof(message), "Height: %.1f mm", (double)state.getCurrentHeight());
+      display.showMessage(message);
+      lastMessageTime = millis();
+      showingMessage = true;
+    } else if (downButton.isPressed() && !upButton.isPressed()) {
+      // Decrease height offset by 0.5 mm
+      state.adjustHeightOffset(-0.5);
+      char message[20];
+      snprintf(message, sizeof(message), "Height: %.1f mm", (double)state.getCurrentHeight());
+      display.showMessage(message);
+      lastMessageTime = millis();
+      showingMessage = true;
+    }
+
+    // Exit calibration mode with long press of both buttons
+    if (upButton.isBothLongPressed(downButton)) {
+      state.setState(DeskState::IDLE);
+      display.showMessage("Calibration Saved");
+      delay(1000); // Show the message for 1 second
     }
   }
 }

@@ -15,8 +15,6 @@ public:
   void update(); // Call this regularly to handle ramping
 
 private:
-  void rampToSpeed(uint8_t targetSpeed);
-
   uint8_t forwardPin;
   uint8_t backwardPin;
   uint8_t currentSpeed;
@@ -28,8 +26,7 @@ private:
   static const uint8_t MIN_SPEED = 0;
   static const uint8_t MAX_SPEED = 255;
   static const unsigned long RAMP_TIME_MS = 500; // Reduced from 1000ms to 500ms
-  static const uint8_t RAMP_STEP =
-      10; // Increased from 5 to 10 for faster ramping
+  static const uint8_t RAMP_STEP = 5;           // Increased from 5 to 10 for faster ramping
 };
 
 #endif // MOTORCONTROL_H

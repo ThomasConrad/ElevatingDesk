@@ -6,14 +6,7 @@
 
 class DeskState {
 public:
-  enum State {
-    IDLE,
-    MOVING_UP,
-    MOVING_DOWN,
-    CALIBRATING,
-    PRESET_MODE,
-    PRESET_EDIT_MODE
-  };
+  enum State { IDLE, MOVING_UP, MOVING_DOWN, CALIBRATING, CALIBRATING_HEIGHT, PRESET_MODE, PRESET_EDIT_MODE };
 
   DeskState();
   void init();
@@ -25,6 +18,9 @@ public:
   // Position management
   float getCurrentHeight() const;
   void updateHeight(float height);
+  float getHeightOffset() const;
+  void setHeightOffset(float offset);
+  void adjustHeightOffset(float delta);
   bool isCalibrated() const;
   void setCalibrated(bool calibrated);
 
@@ -43,6 +39,7 @@ public:
 private:
   State currentState;
   float currentHeight;
+  float heightOffset; // Offset to adjust displayed height
   bool calibrationStatus;
   float presets[MAX_PRESETS];
   uint8_t currentPreset;
@@ -50,9 +47,9 @@ private:
   static const int EEPROM_START_ADDRESS = 0;
   static const int CALIBRATION_FLAG_ADDRESS = EEPROM_START_ADDRESS;
   static const int HEIGHT_ADDRESS = CALIBRATION_FLAG_ADDRESS + sizeof(bool);
-  static const int PRESETS_ADDRESS = HEIGHT_ADDRESS + sizeof(float);
-  static const int CURRENT_PRESET_ADDRESS =
-      PRESETS_ADDRESS + (MAX_PRESETS * sizeof(float));
+  static const int HEIGHT_OFFSET_ADDRESS = HEIGHT_ADDRESS + sizeof(float);
+  static const int PRESETS_ADDRESS = HEIGHT_OFFSET_ADDRESS + sizeof(float);
+  static const int CURRENT_PRESET_ADDRESS = PRESETS_ADDRESS + (MAX_PRESETS * sizeof(float));
 };
 
 #endif // DESKSTATE_H

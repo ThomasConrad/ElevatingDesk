@@ -30,8 +30,7 @@ MotorControl motor(MOTOR_FORWARD_PIN, MOTOR_BACKWARD_PIN);
 HeightDisplay display;
 
 // Create the desk controller
-DeskController controller(upButton, downButton, endStop, encoder, motor,
-                          display);
+DeskController controller(upButton, downButton, endStop, encoder, motor, display);
 
 void setup() {
   // Initialize serial for debugging
