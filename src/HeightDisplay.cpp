@@ -32,19 +32,32 @@ void HeightDisplay::showHeight(float heightMM, bool isMoving) {
   clearDisplay();
   currentMode = NORMAL;
   
-  // Draw header with desk icon
-  drawHeader("DESK HEIGHT");
+  // Show large height number in center
+  char heightStr[10];
+  snprintf(heightStr, sizeof(heightStr), "%.1f", (double)heightMM);
   
-  // Draw main height display
-  drawHeightDisplay(heightMM, true);
+  // Large height display (text size 3)
+  display.setTextSize(3);
+  int textWidth = strlen(heightStr) * 18; // Each char is ~18 pixels wide at size 3
+  int x = (SCREEN_WIDTH - textWidth) / 2;
+  display.setCursor(x, 20);
+  display.print(heightStr);
   
-  // Draw movement indicator
+  // Small "mm" unit below
+  display.setTextSize(1);
+  centerText("mm", 50, 1);
+  
+  // Movement indicator if moving
   if (isMoving) {
-    drawMovementIndicator(true, heightMM > 0); // Assume positive change is up
+    display.setTextSize(2);
+    if (animationToggle) {
+      centerText(heightMM > 0 ? "UP" : "DOWN", 2, 2);
+    }
+  } else {
+    // Show "DESK" label when static
+    display.setTextSize(1);
+    centerText("DESK", 2, 1);
   }
-  
-  // Draw footer with units
-  drawFooter("millimeters");
   
   display.display();
 }
@@ -53,28 +66,22 @@ void HeightDisplay::showPresetMode(uint8_t presetNumber, float presetHeight) {
   clearDisplay();
   currentMode = PRESET_MODE;
   
-  // Draw header
-  drawHeader("PRESET MODE");
-  
-  // Draw preset number prominently
+  // Large "PRESET" at top
   display.setTextSize(2);
-  display.setCursor(MARGIN_X, MAIN_CONTENT_Y);
-  display.print("P");
-  display.print(presetNumber);
+  centerText("PRESET", 5, 2);
   
-  // Draw preset height
+  // Huge preset number in center
+  char presetStr[3];
+  snprintf(presetStr, sizeof(presetStr), "%d", presetNumber);
+  display.setTextSize(4);
+  centerText(presetStr, 25, 4);
+  
+  // Height value below
   char heightStr[10];
-  snprintf(heightStr, sizeof(heightStr), "%.1fmm", (double)presetHeight);
+  snprintf(heightStr, sizeof(heightStr), "%.1f mm", (double)presetHeight);
   display.setTextSize(1);
-  display.setCursor(50, MAIN_CONTENT_Y + 4);
-  display.print(heightStr);
+  centerText(heightStr, 55, 1);
   
-  // Draw preset indicators
-  for (uint8_t i = 1; i <= 3; i++) {
-    drawPresetIndicator(i, i == presetNumber);
-  }
-  
-  drawFooter("Up/Down: Select | Both: Go");
   display.display();
 }
 
@@ -82,16 +89,29 @@ void HeightDisplay::showCalibrationMode(float currentHeight, bool showInstructio
   clearDisplay();
   currentMode = HEIGHT_CALIBRATION;
   
-  drawHeader("HEIGHT CAL");
+  // Title at top
+  display.setTextSize(1);
+  centerText("CALIBRATION", 2, 1);
   
   if (showInstructions && animationToggle) {
-    centerText("Up/Down to", MAIN_CONTENT_Y, 1);
-    centerText("adjust height", MAIN_CONTENT_Y + 8, 1);
+    // Large instruction text
+    display.setTextSize(2);
+    centerText("UP/DOWN", 20, 2);
+    centerText("ADJUST", 40, 2);
   } else {
-    drawHeightDisplay(currentHeight, false);
+    // Large height display
+    char heightStr[10];
+    snprintf(heightStr, sizeof(heightStr), "%.1f", (double)currentHeight);
+    display.setTextSize(3);
+    int textWidth = strlen(heightStr) * 18;
+    int x = (SCREEN_WIDTH - textWidth) / 2;
+    display.setCursor(x, 25);
+    display.print(heightStr);
+    
+    display.setTextSize(1);
+    centerText("mm", 50, 1);
   }
   
-  drawFooter("Hold Both: Save & Exit");
   display.display();
 }
 
@@ -99,17 +119,17 @@ void HeightDisplay::showStatusMessage(const char* message, bool isSuccess) {
   clearDisplay();
   currentMode = STATUS_MESSAGE;
   
-  // Draw icon based on success/failure
+  // Large status icon at top
+  display.setTextSize(3);
   if (isSuccess) {
-    drawIcon(MARGIN_X, MAIN_CONTENT_Y, ">");
+    centerText("OK", 8, 3);
   } else {
-    drawIcon(MARGIN_X, MAIN_CONTENT_Y, "!");
+    centerText("!!", 8, 3);
   }
   
-  // Center the message
-  display.setTextSize(1);
-  display.setCursor(20, MAIN_CONTENT_Y + 2);
-  display.print(message);
+  // Message below in large text
+  display.setTextSize(2);
+  centerText(message, 35, 2);
   
   display.display();
 }
@@ -118,12 +138,13 @@ void HeightDisplay::showError(const char* errorMessage) {
   clearDisplay();
   currentMode = ERROR;
   
-  drawHeader("ERROR");
-  drawIcon(MARGIN_X, MAIN_CONTENT_Y, "X");
+  // Large ERROR text
+  display.setTextSize(2);
+  centerText("ERROR", 10, 2);
   
+  // Error message below
   display.setTextSize(1);
-  display.setCursor(20, MAIN_CONTENT_Y + 2);
-  display.print(errorMessage);
+  centerText(errorMessage, 35, 1);
   
   display.display();
 }
@@ -131,13 +152,14 @@ void HeightDisplay::showError(const char* errorMessage) {
 void HeightDisplay::showBootScreen() {
   clearDisplay();
   
-  // Draw logo/title
-  display.setTextSize(1);
-  centerText("ELEVATING DESK", 8, 1);
-  centerText("Controller v1.0", 18, 1);
+  // Large title
+  display.setTextSize(2);
+  centerText("DESK", 15, 2);
+  centerText("CTRL", 35, 2);
   
-  // Draw progress bar
-  drawProgressBar(20, 28, 88, 3, 1.0);
+  // Version at bottom
+  display.setTextSize(1);
+  centerText("v1.0", 55, 1);
   
   display.display();
 }
@@ -147,79 +169,7 @@ void HeightDisplay::clearDisplay() {
   display.setTextColor(SSD1306_WHITE);
 }
 
-void HeightDisplay::drawHeader(const char* title) {
-  display.setTextSize(1);
-  display.setCursor(MARGIN_X, 0);
-  display.print(title);
-  
-  // Draw underline
-  display.drawLine(0, 8, SCREEN_WIDTH, 8, SSD1306_WHITE);
-}
-
-void HeightDisplay::drawFooter(const char* text) {
-  display.setTextSize(1);
-  display.setCursor(MARGIN_X, FOOTER_Y);
-  display.print(text);
-}
-
-void HeightDisplay::drawProgressBar(int x, int y, int width, int height, float progress) {
-  // Draw border
-  display.drawRect(x, y, width, height, SSD1306_WHITE);
-  
-  // Draw fill
-  int fillWidth = (int)(width * progress);
-  if (fillWidth > 0) {
-    display.fillRect(x + 1, y + 1, fillWidth - 2, height - 2, SSD1306_WHITE);
-  }
-}
-
-void HeightDisplay::drawIcon(int x, int y, const char* icon) {
-  display.setTextSize(2);
-  display.setCursor(x, y);
-  display.print(icon);
-}
-
-void HeightDisplay::drawHeightDisplay(float height, bool large) {
-  char heightStr[15];
-  snprintf(heightStr, sizeof(heightStr), "%.1f", (double)height);
-  
-  if (large) {
-    display.setTextSize(2);
-    display.setCursor(MARGIN_X, MAIN_CONTENT_Y);
-    display.print(heightStr);
-    
-    display.setTextSize(1);
-    display.setCursor(MARGIN_X + strlen(heightStr) * 12, MAIN_CONTENT_Y + 8);
-    display.print("mm");
-  } else {
-    display.setTextSize(1);
-    centerText(heightStr, MAIN_CONTENT_Y, 1);
-    centerText("mm", MAIN_CONTENT_Y + 8, 1);
-  }
-}
-
-void HeightDisplay::drawMovementIndicator(bool isMoving, bool isUp) {
-  if (isMoving && animationToggle) {
-    display.setCursor(SCREEN_WIDTH - 15, MAIN_CONTENT_Y);
-    display.setTextSize(1);
-    display.print(isUp ? "^" : "v");
-  }
-}
-
-void HeightDisplay::drawPresetIndicator(uint8_t presetNumber, bool isActive) {
-  int x = 90 + (presetNumber - 1) * 12;
-  int y = MAIN_CONTENT_Y;
-  
-  if (isActive) {
-    display.fillCircle(x, y, 3, SSD1306_WHITE);
-  } else {
-    display.drawCircle(x, y, 3, SSD1306_WHITE);
-  }
-  
-  display.setTextSize(1);
-  display.setCursor(x - 2, y - 3);
-  display.print(presetNumber);
-}
+// Simplified helper methods for 128x64 display
 
 void HeightDisplay::centerText(const char* text, int y, int textSize) {
   display.setTextSize(textSize);

@@ -34,15 +34,16 @@ public:
 
 private:
   static const int SCREEN_WIDTH = 128;
-  static const int SCREEN_HEIGHT = 32;
+  static const int SCREEN_HEIGHT = 64;
   static const int OLED_RESET = -1;
   static const int SCREEN_ADDRESS = 0x3C;
   
-  // UI Layout constants
-  static const int HEADER_HEIGHT = 10;
-  static const int MAIN_CONTENT_Y = 12;
-  static const int FOOTER_Y = 24;
-  static const int MARGIN_X = 2;
+  // UI Layout constants for 128x64 display
+  static const int HEADER_HEIGHT = 12;
+  static const int MAIN_CONTENT_Y = 16;
+  static const int SECONDARY_CONTENT_Y = 40;
+  static const int FOOTER_Y = 56;
+  static const int MARGIN_X = 4;
   
   Adafruit_SSD1306 display;
   DisplayMode currentMode;
@@ -51,13 +52,6 @@ private:
   
   // UI rendering methods
   void clearDisplay();
-  void drawHeader(const char* title);
-  void drawFooter(const char* text);
-  void drawProgressBar(int x, int y, int width, int height, float progress);
-  void drawIcon(int x, int y, const char* icon);
-  void drawHeightDisplay(float height, bool large = true);
-  void drawMovementIndicator(bool isMoving, bool isUp);
-  void drawPresetIndicator(uint8_t presetNumber, bool isActive);
   void centerText(const char* text, int y, int textSize = 1);
   
   // Animation helpers
