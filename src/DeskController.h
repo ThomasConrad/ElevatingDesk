@@ -18,10 +18,10 @@ public:
 
 private:
   void handleButtons();
+  void handleIdleButtons(bool up, bool down, bool downLong, bool bothLong, bool bothVeryLong);
+  void handlePresetButtons(bool up, bool down, bool both, bool bothLong);
   void handleMovement();
   void handleCalibration();
-  void handleHeightCalibration();
-  void handleEncoderCalibration();
   void handlePresetMode();
   void updateDisplay();
   void moveToPreset(uint8_t presetIndex);

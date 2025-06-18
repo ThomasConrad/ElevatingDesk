@@ -28,64 +28,90 @@ void DeskController::update() {
   handleButtons();
   handleMovement();
   handleCalibration();
-  handleHeightCalibration();
-  handleEncoderCalibration();
   handlePresetMode();
   updateDisplay();
 }
 
 void DeskController::handleButtons() {
-  if (state.getState() == DeskState::IDLE) {
-    if (upButton.isPressed()) {
-      state.setState(DeskState::MOVING_UP);
-    } else if (downButton.isPressed()) {
-      if (downButton.isLongPressed() && !state.isCalibrated()) {
-        state.setState(DeskState::CALIBRATING);
-      } else {
-        state.setState(DeskState::MOVING_DOWN);
-      }
-    } else if (upButton.isBothVeryLongPressed(downButton)) {
-      state.setState(DeskState::CALIBRATING_HEIGHT);
-      display.showStatusMessage("Entering Height Cal", true);
-    } else if (upButton.isBothLongPressed(downButton) && upButton.isVeryLongPressed()) {
-      state.setState(DeskState::CALIBRATING_ENCODER);
-      display.showStatusMessage("Entering Encoder Cal", true);
-    } else if (upButton.isBothLongPressed(downButton)) {
-      state.setState(DeskState::PRESET_MODE);
-      display.showStatusMessage("Entering Presets", true);
-    }
-  } else if (state.getState() == DeskState::PRESET_MODE) {
-    if (upButton.isBothLongPressed(downButton)) {
-      saveCurrentPreset();
-      state.setState(DeskState::IDLE);
-      char message[20];
-      snprintf(message, sizeof(message), "Preset %d Saved", state.getCurrentPreset() + 1);
-      display.showStatusMessage(message, true);
-    } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
-      moveToPreset(state.getCurrentPreset());
-    } else if (upButton.isPressed() && !downButton.isPressed()) {
-      state.cyclePreset(true);
-      // Display handled in updateDisplay() method
-    } else if (downButton.isPressed() && !upButton.isPressed()) {
-      state.cyclePreset(false);
-      // Display handled in updateDisplay() method
-    } else if (!upButton.isPressed() && !downButton.isPressed()) {
-      // Exit preset mode without saving if no buttons are pressed for 5 seconds
-      static unsigned long lastButtonPress = 0;
-      if (lastButtonPress == 0) {
-        lastButtonPress = millis();
-      } else if (millis() - lastButtonPress > 5000) {
+  // Simple button state detection
+  bool upPressed = upButton.isPressed();
+  bool downPressed = downButton.isPressed();
+  bool bothPressed = upPressed && downPressed;
+  bool downLong = downButton.isLongPressed();
+  bool bothLong = upButton.isBothLongPressed(downButton);
+  bool bothVeryLong = upButton.isBothVeryLongPressed(downButton);
+  
+  switch (state.getState()) {
+    case DeskState::IDLE:
+      handleIdleButtons(upPressed, downPressed, downLong, bothLong, bothVeryLong);
+      break;
+      
+    case DeskState::PRESET_MODE:
+      handlePresetButtons(upPressed, downPressed, bothPressed, bothLong);
+      break;
+      
+    default:
+      // For all other states, return to IDLE when no buttons pressed
+      if (!upPressed && !downPressed && state.getState() != DeskState::CALIBRATING) {
         state.setState(DeskState::IDLE);
-        display.showStatusMessage("Normal Mode", true);
-        lastButtonPress = 0;
       }
-    } else {
+      break;
+  }
+}
+
+void DeskController::handleIdleButtons(bool up, bool down, bool downLong, bool bothLong, bool bothVeryLong) {
+  if (bothVeryLong) {
+    // Priority 1: Both buttons very long press -> Full Calibration (encoder + height)
+    state.setState(DeskState::CALIBRATING);
+    display.showStatusMessage("Entering Calibration", true);
+  } else if (bothLong) {
+    // Priority 2: Both buttons long press -> Preset mode
+    state.setState(DeskState::PRESET_MODE);
+    display.showStatusMessage("Entering Presets", true);
+  } else if (down && downLong && !state.isCalibrated()) {
+    // Priority 3: Down long press when uncalibrated -> Calibration
+    state.setState(DeskState::CALIBRATING);
+  } else if (up && !down) {
+    // Priority 4: Up button alone -> Move up
+    state.setState(DeskState::MOVING_UP);
+  } else if (down && !up) {
+    // Priority 5: Down button alone -> Move down
+    state.setState(DeskState::MOVING_DOWN);
+  }
+}
+
+void DeskController::handlePresetButtons(bool up, bool down, bool both, bool bothLong) {
+  static unsigned long lastButtonPress = 0;
+  
+  if (bothLong) {
+    // Save current preset
+    saveCurrentPreset();
+    state.setState(DeskState::IDLE);
+    char message[20];
+    snprintf(message, sizeof(message), "Preset %d Saved", state.getCurrentPreset() + 1);
+    display.showStatusMessage(message, true);
+  } else if (both && !bothLong) {
+    // Go to current preset
+    moveToPreset(state.getCurrentPreset());
+  } else if (up && !down) {
+    // Cycle preset forward
+    state.cyclePreset(true);
+    lastButtonPress = millis();
+  } else if (down && !up) {
+    // Cycle preset backward
+    state.cyclePreset(false);
+    lastButtonPress = millis();
+  } else if (!up && !down) {
+    // No buttons - check timeout
+    if (lastButtonPress == 0) {
       lastButtonPress = millis();
-    }
-  } else if (!upButton.isPressed() && !downButton.isPressed()) {
-    if (state.getState() != DeskState::CALIBRATING) {
+    } else if (millis() - lastButtonPress > PRESET_TIMEOUT) {
       state.setState(DeskState::IDLE);
+      display.showStatusMessage("Normal Mode", true);
+      lastButtonPress = 0;
     }
+  } else {
+    lastButtonPress = millis();
   }
 }
 
@@ -108,10 +134,6 @@ void DeskController::handleMovement() {
 
   case DeskState::CALIBRATING:
     // Handled in handleCalibration()
-    break;
-
-  case DeskState::CALIBRATING_HEIGHT:
-    // Handled in handleHeightCalibration()
     motor.stop();
     break;
 
@@ -122,24 +144,89 @@ void DeskController::handleMovement() {
   case DeskState::PRESET_EDIT_MODE:
     motor.stop();
     break;
-
-  case DeskState::CALIBRATING_ENCODER:
-    // Handled in handleEncoderCalibration()
-    motor.stop();
-    break;
   }
 }
 
 void DeskController::handleCalibration() {
   if (state.getState() == DeskState::CALIBRATING) {
-    if (endStop.isTriggered()) {
-      motor.stop();
-      encoder.setPulseCount(0); // Reset encoder position to 0 at bottom
-      state.setCalibrated(true);
-      state.setState(DeskState::IDLE);
-      display.showStatusMessage("Calibrated!", true);
-    } else {
-      motor.backward(MOTOR_SPEED);
+    static uint8_t step = 0; // 0=start height, 1=end height, 2=results
+    static float startHeight = 700.0f; // Default start height
+    static float endHeight = 800.0f;   // Default end height 
+    static long startPulseCount = 0;
+    static bool initialized = false;
+    
+    // Initialize on first entry
+    if (!initialized) {
+      step = 0;
+      // Load current settings if they exist, otherwise use defaults
+      float currentSlitsPerMM = state.getEncoderSlitsPerMM();
+      if (currentSlitsPerMM > 0.1f && state.isCalibrated()) {
+        // Has existing calibration - use current height as start
+        startHeight = state.getCurrentHeight();
+      } else {
+        // No calibration - use default
+        startHeight = 700.0f;
+      }
+      endHeight = startHeight + 100.0f;
+      initialized = true;
+    }
+    
+    // Show current step
+    long currentPulseCount = encoder.getPulseCount();
+    display.showEncoderCalibrationMode(step, startHeight, endHeight, currentPulseCount - startPulseCount);
+    
+    if (step == 0) {
+      // Step 1: Set start height
+      if (upButton.isPressed() && !downButton.isPressed()) {
+        startHeight += 1.0f;
+        if (startHeight > 1200.0f) startHeight = 1200.0f;
+      } else if (downButton.isPressed() && !upButton.isPressed()) {
+        startHeight -= 1.0f;
+        if (startHeight < 600.0f) startHeight = 600.0f;
+      } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
+        // Record start position and move to next step
+        startPulseCount = encoder.getPulseCount();
+        step = 1;
+        endHeight = startHeight + 100.0f; // Default 100mm difference
+      }
+      
+    } else if (step == 1) {
+      // Step 2: Set end height (after moving desk)
+      if (upButton.isPressed() && !downButton.isPressed()) {
+        endHeight += 1.0f;
+        if (endHeight > 1200.0f) endHeight = 1200.0f;
+      } else if (downButton.isPressed() && !upButton.isPressed()) {
+        endHeight -= 1.0f;
+        if (endHeight < 600.0f) endHeight = 600.0f;
+      } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
+        // Calculate and save slits per mm + set height offset
+        long totalPulses = currentPulseCount - startPulseCount;
+        float heightDiff = endHeight - startHeight;
+        
+        if (heightDiff != 0 && totalPulses != 0) {
+          float slitsPerMM = abs(totalPulses) / abs(heightDiff);
+          state.setEncoderSlitsPerMM(slitsPerMM);
+          encoder.setSlitsPerMM(slitsPerMM);
+          
+          // Set height offset so current position shows as startHeight
+          float currentEncoderHeight = encoder.getHeightMM();
+          float heightOffset = startHeight - currentEncoderHeight;
+          state.setHeightOffset(heightOffset);
+          
+          state.setCalibrated(true);
+          step = 2;
+          
+          // Show results for 2 seconds then exit
+          delay(2000);
+          state.setState(DeskState::IDLE);
+          display.showStatusMessage("Calibrated!", true);
+          delay(1500);
+        }
+        
+        // Reset for next time
+        initialized = false;
+        step = 0;
+      }
     }
   }
 }
@@ -182,12 +269,8 @@ void DeskController::updateDisplay() {
         display.showPresetMode(state.getCurrentPreset() + 1, state.getPreset(state.getCurrentPreset()));
         break;
       
-      case DeskState::CALIBRATING_HEIGHT:
-        // Handled separately in handleHeightCalibration()
-        break;
-
-      case DeskState::CALIBRATING_ENCODER:
-        // Handled separately in handleEncoderCalibration()
+      case DeskState::CALIBRATING:
+        // Handled separately in handleCalibration()
         break;
         
       case DeskState::MOVING_UP:
@@ -202,105 +285,3 @@ void DeskController::updateDisplay() {
   }
 }
 
-void DeskController::handleHeightCalibration() {
-  if (state.getState() == DeskState::CALIBRATING_HEIGHT) {
-    static bool showingInstructions = false;
-    static unsigned long lastToggleTime = 0;
-
-    // Toggle display every 3 seconds
-    if (millis() - lastToggleTime > 3000) {
-      lastToggleTime = millis();
-      showingInstructions = !showingInstructions;
-    }
-
-    // Show calibration screen with alternating content
-    display.showCalibrationMode(state.getCurrentHeight(), showingInstructions);
-
-    // Handle button presses for adjustment
-    if (upButton.isPressed() && !downButton.isPressed()) {
-      state.adjustHeightOffset(0.5);
-      showingInstructions = false; // Show height immediately after adjustment
-      lastToggleTime = millis();
-    } else if (downButton.isPressed() && !upButton.isPressed()) {
-      state.adjustHeightOffset(-0.5);
-      showingInstructions = false; // Show height immediately after adjustment
-      lastToggleTime = millis();
-    }
-
-    // Exit calibration mode with long press of both buttons
-    if (upButton.isBothLongPressed(downButton)) {
-      state.setState(DeskState::IDLE);
-      display.showStatusMessage("Cal Saved!", true);
-      delay(1500); // Show the message for 1.5 seconds
-    }
-  }
-}
-
-void DeskController::handleEncoderCalibration() {
-  if (state.getState() == DeskState::CALIBRATING_ENCODER) {
-    static uint8_t step = 0; // 0=start height, 1=end height, 2=results
-    static float startHeight = 700.0f; // Default start height
-    static float endHeight = 800.0f;   // Default end height 
-    static long startPulseCount = 0;
-    static bool initialized = false;
-    
-    // Initialize on first entry
-    if (!initialized) {
-      step = 0;
-      startHeight = 700.0f;
-      endHeight = 800.0f;
-      initialized = true;
-    }
-    
-    // Show current step
-    long currentPulseCount = encoder.getPulseCount();
-    display.showEncoderCalibrationMode(step, startHeight, endHeight, currentPulseCount - startPulseCount);
-    
-    if (step == 0) {
-      // Step 1: Set start height
-      if (upButton.isPressed() && !downButton.isPressed()) {
-        startHeight += 1.0f;
-        if (startHeight > 1200.0f) startHeight = 1200.0f;
-      } else if (downButton.isPressed() && !upButton.isPressed()) {
-        startHeight -= 1.0f;
-        if (startHeight < 600.0f) startHeight = 600.0f;
-      } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
-        // Record start position and move to next step
-        startPulseCount = encoder.getPulseCount();
-        step = 1;
-        endHeight = startHeight + 100.0f; // Default 100mm difference
-      }
-      
-    } else if (step == 1) {
-      // Step 2: Set end height (after moving desk)
-      if (upButton.isPressed() && !downButton.isPressed()) {
-        endHeight += 1.0f;
-        if (endHeight > 1200.0f) endHeight = 1200.0f;
-      } else if (downButton.isPressed() && !upButton.isPressed()) {
-        endHeight -= 1.0f;
-        if (endHeight < 600.0f) endHeight = 600.0f;
-      } else if (upButton.isBothPressed(downButton) && !upButton.isLongPressed()) {
-        // Calculate and save slits per mm
-        long totalPulses = currentPulseCount - startPulseCount;
-        float heightDiff = endHeight - startHeight;
-        
-        if (heightDiff != 0 && totalPulses > 0) {
-          float slitsPerMM = totalPulses / heightDiff;
-          state.setEncoderSlitsPerMM(slitsPerMM);
-          encoder.setSlitsPerMM(slitsPerMM);
-          step = 2;
-          
-          // Show results for 2 seconds then exit
-          delay(2000);
-          state.setState(DeskState::IDLE);
-          display.showStatusMessage("Encoder Saved!", true);
-          delay(1500);
-        }
-        
-        // Reset for next time
-        initialized = false;
-        step = 0;
-      }
-    }
-  }
-}

@@ -25,8 +25,23 @@ float DeskState::getCurrentHeight() const {
 }
 
 void DeskState::updateHeight(float height) {
+  // Only save if height changed significantly to avoid EEPROM wear
+  static unsigned long lastSaveTime = 0;
+  static float lastSavedHeight = 0.0f;
+  
   currentHeight = height;
-  saveToEEPROM();
+  
+  // Save to EEPROM if:
+  // - Height changed by more than 1mm AND
+  // - At least 5 seconds have passed since last save
+  float heightDiff = abs(height - lastSavedHeight);
+  unsigned long currentTime = millis();
+  
+  if (heightDiff > 1.0f && (currentTime - lastSaveTime) > 5000) {
+    saveToEEPROM();
+    lastSavedHeight = height;
+    lastSaveTime = currentTime;
+  }
 }
 
 float DeskState::getHeightOffset() const {

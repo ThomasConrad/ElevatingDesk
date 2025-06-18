@@ -1,126 +1,85 @@
-# Elevating Desk Controller
+# Standing Desk Controller
 
-A sophisticated Arduino-based controller for an electric standing desk, featuring precise height control, preset positions, and smooth operation.
+Arduino Nano-based standing desk controller with optical encoder height tracking, OLED display, and memory presets.
 
 ## Features
 
-- **Dual Motor Control**: Independent control of two motors for precise desk movement
-- **Height Tracking**: Accurate height measurement using rotary encoders
-- **Preset Positions**: Three customizable preset heights
-- **Smooth Operation**: Ramped motor control for gentle starts and stops
+- **Motor Control**: PWM-controlled motors with ramping for smooth operation  
+- **Height Tracking**: Precise height measurement using optical encoder with slotted wheel
+- **OLED Display**: Large, readable height display on 128x64 SSD1306 screen
+- **Memory Presets**: 3 programmable height positions stored in EEPROM
 - **Safety Features**: 
-  - Emergency stop functionality
-  - Collision detection
-  - Overcurrent protection
-  - Height limit enforcement
+  - End stop limit switches
+  - Smooth motor ramping
+  - Height bounds checking
+- **Unified Calibration**: Simple two-button workflow for encoder and height setup
 
 ## Hardware Requirements
 
-- Arduino Nano
-- Two DC motors with encoders
-- Two motor drivers (e.g., L298N)
-- Two push buttons
-- Two rotary encoders
-- RGB LED for status indication
-- Power supply (24V recommended)
+- Arduino Nano (ATmega328P)
+- SSD1306 OLED Display (128x64, I2C)
+- 2x Momentary Push Buttons  
+- Optical Encoder (slotted wheel + light sensor)
+- Motor Driver (PWM-capable)
+- End Stop Switches
+- Standing Desk Motors
 
-## Pin Configuration
+## Button Controls
 
-### Motor Control
-- Motor 1 PWM: Pin 2
-- Motor 1 Direction: Pin 3
-- Motor 2 PWM: Pin 4
-- Motor 2 Direction: Pin 5
+### Normal Operation
+- **Up Button**: Move desk up
+- **Down Button**: Move desk down
+- **Both Buttons (Long Press)**: Enter preset mode
+- **Both Buttons (Very Long Press)**: Enter calibration mode
 
-### Encoders
-- Encoder 1 A: Pin A0 (14)
-- Encoder 1 B: Pin A1 (15)
-- Encoder 2 A: Pin A2 (16)
-- Encoder 2 B: Pin A3 (17)
-
-### Buttons
-- Up Button: Pin 6
-- Down Button: Pin 7
-
-### LED
-- Red: Pin 8
-- Green: Pin 9
-- Blue: Pin 10
-
-## Operation
-
-### Basic Controls
-- **Up Button**: Press to move desk up
-- **Down Button**: Press to move desk down
-- **Both Buttons**: Press simultaneously to stop desk movement
+### First Time Setup
+- **Down Button (Long Press)**: Enter calibration mode (when uncalibrated)
 
 ### Preset Mode
-- **Enter Preset Mode**: Hold both buttons for 2 seconds
-- **Cycle Presets**: Press either up or down button to cycle through presets (1-3)
-- **Select Preset**: Press both buttons to move desk to selected preset height
-- **Exit Preset Mode**: Hold both buttons for 2 seconds
+- **Up/Down Buttons**: Navigate through presets (1, 2, 3)
+- **Both Buttons (Short Press)**: Move to selected preset
+- **Both Buttons (Long Press)**: Save current height as selected preset
+- **No Input (5 seconds)**: Exit to normal mode
 
-### Setting Presets
-1. Enter Preset Mode
-2. Select the preset you want to modify
-3. Move desk to desired height
-4. Hold both buttons for 2 seconds to save current height as selected preset
-5. Preset will be saved and persist across power cycles
+### Calibration Mode
+1. **Step 1 - Set Start Height**:
+   - Up/Down: Adjust start height value
+   - Both buttons: Confirm and proceed to step 2
 
-### LED Indicators
-- **Normal Mode**:
-  - Green: Desk is at target height
-  - Blue: Desk is moving up
-  - Red: Desk is moving down
-- **Preset Mode**:
-  - Slow Blink: In preset selection mode
-  - Color indicates selected preset:
-    - Red: Preset 1
-    - Green: Preset 2
-    - Blue: Preset 3
-- **Preset Save**:
-  - Quick double blink of selected color when preset is saved
+2. **Step 2 - Set End Height**:
+   - Move desk physically to new position
+   - Up/Down: Adjust end height value  
+   - Both buttons: Save calibration and exit
 
-## Safety Features
+## Calibration Process
 
-1. **Emergency Stop**:
-   - Press both buttons simultaneously to stop all movement
-   - System will enter a safe state until reset
+The unified calibration sets both encoder scaling and height reference in one workflow:
 
-2. **Collision Detection**:
-   - System monitors motor current
-   - Stops movement if resistance is detected
-   - Prevents damage to desk or objects
+1. Enter calibration mode (both buttons very long press)
+2. Set the current height using up/down buttons, confirm with both buttons
+3. Physically move the desk up or down to a different position
+4. Set the new height using up/down buttons, confirm with both buttons
+5. System automatically calculates encoder scaling and saves all settings
 
-3. **Height Limits**:
-   - Software-enforced minimum and maximum heights
-   - Prevents desk from moving beyond safe range
+This eliminates the need for separate encoder and height calibration procedures.
 
-4. **Overcurrent Protection**:
-   - Monitors motor current
-   - Reduces power or stops if current exceeds safe limits
+## Build Commands
 
-## Installation
+```bash
+# Build project
+pio run
 
-1. Connect all hardware components according to pin configuration
-2. Upload the sketch to Arduino Nano
-3. Calibrate the height sensors if needed
-4. Set your preferred preset heights
+# Upload to Arduino
+pio run --target upload
 
-## Calibration
+# Monitor serial output
+pio device monitor --baud 115200
+```
 
-The system includes automatic calibration on startup:
-1. Desk moves to minimum height
-2. Height sensors are zeroed
-3. System is ready for operation
+## Features
 
-## Troubleshooting
-
-- If desk doesn't move, check motor connections and power supply
-- If height tracking is inaccurate, check encoder connections
-- If presets aren't saving, check EEPROM functionality
-- If emergency stop triggers unexpectedly, check current sensors
-
-## License
-
-This project is open source and available under the MIT License.
+- **Height Display**: Large, readable text on 128x64 OLED
+- **Memory Presets**: 3 programmable height positions
+- **Optical Encoder**: Precise height tracking with user-configurable calibration
+- **Safety**: End stop switches and smooth motor ramping
+- **Persistence**: All settings saved to EEPROM
