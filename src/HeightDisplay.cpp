@@ -197,3 +197,57 @@ bool HeightDisplay::shouldAnimate() {
 void HeightDisplay::showMessage(const char* message) {
   showStatusMessage(message, true);
 }
+
+void HeightDisplay::showEncoderCalibrationMode(uint8_t step, float startHeight, float endHeight, long pulseCount) {
+  clearDisplay();
+  currentMode = CALIBRATION;
+  
+  // Title at top
+  display.setTextSize(1);
+  centerText("ENCODER CAL", 2, 1);
+  
+  if (step == 0) {
+    // Step 1: Enter start height
+    display.setTextSize(2);
+    centerText("START HEIGHT", 15, 2);
+    
+    char heightStr[10];
+    snprintf(heightStr, sizeof(heightStr), "%.1f", (double)startHeight);
+    display.setTextSize(3);
+    centerText(heightStr, 35, 3);
+    
+    display.setTextSize(1);
+    centerText("Up/Down: Adjust | Both: Next", 56, 1);
+    
+  } else if (step == 1) {
+    // Step 2: Move desk and enter end height
+    display.setTextSize(2);
+    centerText("END HEIGHT", 15, 2);
+    
+    char heightStr[10];
+    snprintf(heightStr, sizeof(heightStr), "%.1f", (double)endHeight);
+    display.setTextSize(3);
+    centerText(heightStr, 35, 3);
+    
+    display.setTextSize(1);
+    centerText("Up/Down: Adjust | Both: Save", 56, 1);
+    
+  } else if (step == 2) {
+    // Step 3: Show results
+    float heightDiff = endHeight - startHeight;
+    float slitsPerMM = (heightDiff != 0) ? pulseCount / heightDiff : 0;
+    
+    display.setTextSize(2);
+    centerText("CALIBRATED", 15, 2);
+    
+    char resultStr[10];
+    snprintf(resultStr, sizeof(resultStr), "%.1f", (double)slitsPerMM);
+    display.setTextSize(2);
+    centerText(resultStr, 35, 2);
+    
+    display.setTextSize(1);
+    centerText("slits/mm", 50, 1);
+  }
+  
+  display.display();
+}

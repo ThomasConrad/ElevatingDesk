@@ -54,10 +54,19 @@ Arduino Nano has limited resources (2KB SRAM, 32KB Flash):
 ### Hardware Configuration
 - Target: Arduino Nano (ATmega328P)
 - Motors: Dual PWM-controlled motors with ramping
-- Encoders: Rotary encoders for height tracking
-- Display: SSD1306 OLED via I2C
+- Encoders: Optical encoder with slotted wheel and light sensor for height tracking
+- Display: SSD1306 OLED (128x64) via I2C
 - Buttons: Interrupt-capable pins for responsive input
 - Safety: End stops and overcurrent protection
+
+### Optical Encoder Configuration
+The system uses an optical encoder with a simple calibration system:
+- **Slotted Wheel**: Physical wheel with slits that block/allow light to sensor
+- **Light Sensor**: Detects light/dark transitions as wheel rotates
+- **Calibration**: Set via two-button calibration process that calculates slits per mm
+- **Storage**: Slits per mm value is stored in EEPROM and persists across power cycles
+
+Default configuration: 10 slits per mm (user-calibratable)
 
 ## Key Design Patterns
 
@@ -75,6 +84,22 @@ Multiple safety mechanisms:
 - Software height limits
 - Timeout-based preset mode exit
 
+## Encoder Calibration Process
+
+The encoder calibration uses a simple two-button workflow:
+
+1. **Enter Calibration Mode**: Access via button sequence in main UI
+2. **Set Start Height**: Use Up/Down buttons to enter current desk height, Both buttons to confirm
+3. **Move Desk**: Physically move the desk up or down (system counts encoder pulses)
+4. **Set End Height**: Use Up/Down buttons to enter new desk height, Both buttons to save
+5. **Auto-Calculate**: System calculates slits per mm and stores in EEPROM
+
+```cpp
+// Example: After moving desk 100mm and counting 1000 pulses
+// System calculates: 1000 pulses / 100mm = 10 slits per mm
+encoder.setSlitsPerMM(10.0f);
+```
+
 ## Development Notes
 
 - Pin assignments are defined in `ElevatingDesk.cpp` main file
@@ -83,6 +108,7 @@ Multiple safety mechanisms:
 - Button handling supports multiple press types (short/long/very-long) for UI navigation
 - Serial debugging available at 115200 baud
 - Enhanced OLED UI with visual hierarchy, animations, and mode-specific layouts
+- Optical encoder supports various slotted wheel configurations for different mechanical setups
 
 ## Testing Hardware
 

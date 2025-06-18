@@ -1,7 +1,8 @@
 #include "DeskState.h"
 
 DeskState::DeskState()
-    : currentState(IDLE), currentHeight(0.0f), heightOffset(0.0f), calibrationStatus(false), currentPreset(0) {
+    : currentState(IDLE), currentHeight(0.0f), heightOffset(0.0f), calibrationStatus(false), currentPreset(0),
+      encoderSlitsPerMM(10.0f) {
   for (uint8_t i = 0; i < MAX_PRESETS; i++) {
     presets[i] = 0.0f;
   }
@@ -91,6 +92,7 @@ void DeskState::saveToEEPROM() {
   EEPROM.put(HEIGHT_OFFSET_ADDRESS, heightOffset);
   EEPROM.put(PRESETS_ADDRESS, presets);
   EEPROM.put(CURRENT_PRESET_ADDRESS, currentPreset);
+  EEPROM.put(ENCODER_SLITS_PER_MM_ADDRESS, encoderSlitsPerMM);
 }
 
 void DeskState::loadFromEEPROM() {
@@ -99,4 +101,14 @@ void DeskState::loadFromEEPROM() {
   EEPROM.get(HEIGHT_OFFSET_ADDRESS, heightOffset);
   EEPROM.get(PRESETS_ADDRESS, presets);
   EEPROM.get(CURRENT_PRESET_ADDRESS, currentPreset);
+  EEPROM.get(ENCODER_SLITS_PER_MM_ADDRESS, encoderSlitsPerMM);
+}
+
+void DeskState::setEncoderSlitsPerMM(float slitsPerMM) {
+  encoderSlitsPerMM = slitsPerMM;
+  saveToEEPROM();
+}
+
+float DeskState::getEncoderSlitsPerMM() const {
+  return encoderSlitsPerMM;
 }

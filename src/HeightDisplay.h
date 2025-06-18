@@ -24,6 +24,7 @@ public:
   void showHeight(float heightMM, bool isMoving = false);
   void showPresetMode(uint8_t presetNumber, float presetHeight);
   void showCalibrationMode(float currentHeight, bool showInstructions = false);
+  void showEncoderCalibrationMode(uint8_t step, float startHeight, float endHeight, long pulseCount);
   void showStatusMessage(const char* message, bool isSuccess = true);
   void showError(const char* errorMessage);
   void showBootScreen();

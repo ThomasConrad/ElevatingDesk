@@ -6,11 +6,11 @@
 #include "EndStop.h"
 #include "HeightDisplay.h"
 #include "MotorControl.h"
-#include "RotaryEncoder.h"
+#include "OpticalEncoder.h"
 
 class DeskController {
 public:
-  DeskController(ButtonHandler& upButton, ButtonHandler& downButton, EndStop& endStop, RotaryEncoder& encoder,
+  DeskController(ButtonHandler& upButton, ButtonHandler& downButton, EndStop& endStop, OpticalEncoder& encoder,
                  MotorControl& motor, HeightDisplay& display);
 
   void init();
@@ -21,6 +21,7 @@ private:
   void handleMovement();
   void handleCalibration();
   void handleHeightCalibration();
+  void handleEncoderCalibration();
   void handlePresetMode();
   void updateDisplay();
   void moveToPreset(uint8_t presetIndex);
@@ -29,7 +30,7 @@ private:
   ButtonHandler& upButton;
   ButtonHandler& downButton;
   EndStop& endStop;
-  RotaryEncoder& encoder;
+  OpticalEncoder& encoder;
   MotorControl& motor;
   HeightDisplay& display;
   DeskState state;

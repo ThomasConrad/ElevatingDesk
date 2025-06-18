@@ -5,14 +5,14 @@
 #include "EndStop.h"
 #include "HeightDisplay.h"
 #include "MotorControl.h"
-#include "RotaryEncoder.h"
+#include "OpticalEncoder.h"
 
 // Pin definitions for Arduino Nano
 const int UP_BUTTON_PIN = 2;       // D2 - Interrupt capable pin for button
 const int DOWN_BUTTON_PIN = 3;     // D3 - Interrupt capable pin for button
 const int ENDSTOP_PIN = 4;         // D4 - End stop switch
-const int ENCODER_PIN_A = 5;       // D5 - Encoder A
-const int ENCODER_PIN_B = 6;       // D6 - Encoder B
+const int ENCODER_PIN_A = 5;       // D5 - Optical encoder sensor pin
+// ENCODER_PIN_B no longer needed for optical encoder
 const int MOTOR_FORWARD_PIN = 9;   // D9 - PWM capable pin
 const int MOTOR_BACKWARD_PIN = 10; // D10 - PWM capable pin
 
@@ -25,7 +25,8 @@ const int MOTOR_BACKWARD_PIN = 10; // D10 - PWM capable pin
 ButtonHandler upButton(UP_BUTTON_PIN);
 ButtonHandler downButton(DOWN_BUTTON_PIN);
 EndStop endStop(ENDSTOP_PIN);
-RotaryEncoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
+// Optical encoder with default 10 slits per mm (configurable via calibration)
+OpticalEncoder encoder(ENCODER_PIN_A, 10.0f);
 MotorControl motor(MOTOR_FORWARD_PIN, MOTOR_BACKWARD_PIN);
 HeightDisplay display;
 
